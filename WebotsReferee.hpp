@@ -61,16 +61,16 @@ class WebotsReferee : public LibXR::Application
                 uint16_t chassis_power_limit = 45,
                 int publish_period_ms = 100)
       : referee_domain_("host"),
-        robot_game_referee_topic_("robot_game_ref",
-                                  sizeof(WebotsRefereeTypes::RobotGameRefereeSummary),
-                                  &referee_domain_, true),
+        robot_game_referee_topic_(
+            LibXR::Topic::CreateTopic<WebotsRefereeTypes::RobotGameRefereeSummary>(
+                "robot_game_ref", &referee_domain_, true)),
         launcher_domain_("webots_launcher"),
-        launcher_state_topic_("state",
-                              sizeof(WebotsRefereeTypes::WebotsLauncherState),
-                              &launcher_domain_, true),
-        launcher_shot_event_topic_("shot_event",
-                                   sizeof(WebotsRefereeTypes::WebotsLauncherShotEvent),
-                                   &launcher_domain_, true)
+        launcher_state_topic_(
+            LibXR::Topic::CreateTopic<WebotsRefereeTypes::WebotsLauncherState>(
+                "state", &launcher_domain_, true)),
+        launcher_shot_event_topic_(
+            LibXR::Topic::CreateTopic<WebotsRefereeTypes::WebotsLauncherShotEvent>(
+                "shot_event", &launcher_domain_, true))
   {
     state_.bullet_speed = bullet_speed;
     state_.heat_limit = shooter_heat_limit;

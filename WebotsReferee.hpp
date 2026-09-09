@@ -19,7 +19,8 @@ constructor_args:
   - publish_period_ms: 100
 template_args: []
 required_hardware: []
-depends: []
+depends:
+  - qdu-future/Referee
 === END MANIFEST === */
 // clang-format on
 
@@ -94,14 +95,11 @@ class WebotsReferee : public LibXR::Application
     summary_.robot_status.power_gimbal_output = 1;
     summary_.robot_status.power_chassis_output = 1;
     summary_.robot_status.power_launcher_output = 1;
-    summary_.launcher_data.bullet_type = 1;
-    summary_.launcher_data.launcher_id = 1;
-    summary_.launcher_data.bullet_speed = bullet_speed;
 
     auto launcher_state_cb = LibXR::Topic::Callback::Create(
-        [](bool, WebotsReferee *self, LibXR::RawData &data)
+        [](bool, WebotsReferee *self, const LibXR::ConstRawData &data)
         {
-          auto *state = reinterpret_cast<WebotsRefereeTypes::WebotsLauncherState *>(
+          auto *state = reinterpret_cast<const WebotsRefereeTypes::WebotsLauncherState *>(
               data.addr_);
           if (state != nullptr &&
               data.size_ == sizeof(WebotsRefereeTypes::WebotsLauncherState))
@@ -115,10 +113,10 @@ class WebotsReferee : public LibXR::Application
     launcher_state_topic_.RegisterCallback(launcher_state_cb);
 
     auto launcher_shot_event_cb = LibXR::Topic::Callback::Create(
-        [](bool, WebotsReferee *self, LibXR::RawData &data)
+        [](bool, WebotsReferee *self, const LibXR::ConstRawData &data)
         {
           auto *event =
-              reinterpret_cast<WebotsRefereeTypes::WebotsLauncherShotEvent *>(
+              reinterpret_cast<const WebotsRefereeTypes::WebotsLauncherShotEvent *>(
                   data.addr_);
           if (event != nullptr &&
               data.size_ == sizeof(WebotsRefereeTypes::WebotsLauncherShotEvent))
@@ -179,9 +177,6 @@ class WebotsReferee : public LibXR::Application
         summary_.robot_status.shooter_heat_limit =
             ClampToUint16(state_.heat_limit);
         summary_.robot_status.power_launcher_output = state_.launcher_enabled ? 1 : 0;
-        summary_.launcher_data.bullet_speed = state_.bullet_speed;
-        summary_.launcher_data.bullet_freq =
-            ClampToUint8Rounded(state_.current_fire_frequency_hz);
       }
 
       summary = summary_;
@@ -201,19 +196,6 @@ class WebotsReferee : public LibXR::Application
     }
 
     return static_cast<uint16_t>(std::min(value, 65535.0f));
-  }
-
-  /**
-   * @brief 将浮点射频四舍五入后钳位到 uint8_t。
-   */
-  static uint8_t ClampToUint8Rounded(float value)
-  {
-    if (!std::isfinite(value) || value <= 0.0f)
-    {
-      return 0;
-    }
-
-    return static_cast<uint8_t>(std::clamp(std::lround(value), 0L, 255L));
   }
 
   /** @brief 最近一次发布的裁判摘要。 */

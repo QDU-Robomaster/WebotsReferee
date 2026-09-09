@@ -41,8 +41,10 @@ jobs:
       - name: Create minimal CMakeLists.txt
         run: |
           cat > CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.16)
           project(xrobot_mod_test CXX)
-          set(CMAKE_CXX_STANDARD 17)
+          set(CMAKE_CXX_STANDARD 20)
+          set(CMAKE_CXX_STANDARD_REQUIRED ON)
           add_executable(xr_test main.cpp)
           set(XROBOT_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Modules/)
           set(WEBOTS_HOME /usr/local/webots)
@@ -73,6 +75,25 @@ jobs:
 
       - name: Run xrobot_init_mod
         run: |
+          xrobot_src_man add-source https://qdu-robomaster.github.io/qdu-future-modules/index.yaml
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import yaml
+          from xrobot.ModuleParser import load_single_module
+
+          manifest = load_single_module(Path("Modules") / os.environ["XR_MODULE_NAME"])
+          if manifest is None:
+              raise SystemExit("current module manifest was not found")
+          path = Path("Modules/modules.yaml")
+          config = yaml.safe_load(path.read_text()) or {}
+          modules = config.setdefault("modules", [])
+          for dependency in manifest.depends:
+              if dependency not in modules:
+                  modules.append(dependency)
+          path.write_text(yaml.safe_dump(config, sort_keys=False))
+          print("current manifest dependencies:", manifest.depends)
+          PY
           xrobot_init_mod
 
       - name: Add BlinkLED module

@@ -6,6 +6,7 @@
  */
 
 #include <cstdint>
+#include "RefereeTypes.hpp"
 
 namespace WebotsRefereeTypes
 {
@@ -21,59 +22,10 @@ enum class WebotsLauncherRejectReason : uint8_t
   HEAT_LIMIT = 4,  ///< 请求会使热量达到或超过上限。
 };
 
-/**
- * @brief 与 MCU 裁判摘要包布局一致的机器人状态块。
- */
-struct [[gnu::packed]] RobotGameRefereeStatus
-{
-  uint8_t robot_id;
-  uint8_t robot_level;
-  uint16_t remain_hp;
-  uint16_t max_hp;
-  uint16_t shooter_cooling_value;
-  uint16_t shooter_heat_limit;
-  uint16_t chassis_power_limit;
-  uint8_t power_gimbal_output : 1;
-  uint8_t power_chassis_output : 1;
-  uint8_t power_launcher_output : 1;
-};
-
-/**
- * @brief 与 MCU 裁判摘要包布局一致的比赛状态块。
- */
-struct [[gnu::packed]] RobotGameRefereeGame
-{
-  uint8_t game_type : 4;
-  uint8_t game_progress : 4;
-  uint16_t stage_remain_time;
-  uint64_t sync_time_stamp;
-};
-
-/**
- * @brief 与 MCU 裁判摘要包布局一致的发射数据块。
- */
-struct [[gnu::packed]] RobotGameRefereeLauncher
-{
-  uint8_t bullet_type;
-  uint8_t launcher_id;
-  uint8_t bullet_freq;
-  float bullet_speed;
-};
-
-/**
- * @brief Webots 输出的裁判摘要包。
- */
-struct [[gnu::packed]] RobotGameRefereeSummary
-{
-  RobotGameRefereeStatus robot_status;
-  RobotGameRefereeGame game_status;
-  RobotGameRefereeLauncher launcher_data;
-};
-
-static_assert(sizeof(RobotGameRefereeStatus) == 13);
-static_assert(sizeof(RobotGameRefereeGame) == 11);
-static_assert(sizeof(RobotGameRefereeLauncher) == 7);
-static_assert(sizeof(RobotGameRefereeSummary) == 31);
+/** @brief 与 Aimer/实机 Referee 使用完全相同的类型，不在仿真端复制协议布局。 */
+using RobotGameRefereeStatus = RefereeTypes::RobotStatus;
+using RobotGameRefereeGame = RefereeTypes::GameStatus;
+using RobotGameRefereeSummary = RefereeTypes::RobotGameRefereePack;
 
 /**
  * @brief Webots 发射机构当前状态快照。

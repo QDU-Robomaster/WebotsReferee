@@ -8,19 +8,9 @@
 // clang-format off
 /* === MODULE MANIFEST V2 ===
 module_description: Webots referee simulator that mirrors launcher state into robot_game_ref
-constructor_args:
-  - bullet_speed: 30.0
-  - shooter_heat_limit: 240.0
-  - shooter_cooling_value: 40.0
-  - robot_id: 7
-  - robot_level: 1
-  - max_hp: 200
-  - chassis_power_limit: 45
-  - publish_period_ms: 100
-template_args: []
-required_hardware: []
 depends:
-  - qdu-future/Referee
+- id: QDU-Robomaster/Referee
+  ref: same-or-dev
 === END MANIFEST === */
 // clang-format on
 
@@ -28,7 +18,6 @@ depends:
 #include <cmath>
 
 #include "WebotsRefereeTypes.hpp"
-#include "app_framework.hpp"
 #include "libxr.hpp"
 #include "timebase.hpp"
 #include "timer.hpp"
@@ -40,7 +29,7 @@ depends:
  * `WebotsFireNotify` 通过 `webots_launcher/state` 和
  * `webots_launcher/shot_event` 同步。
  */
-class WebotsReferee : public LibXR::Application
+class WebotsReferee
 {
  public:
   /**
@@ -55,12 +44,10 @@ class WebotsReferee : public LibXR::Application
    * @param chassis_power_limit 底盘功率上限。
    * @param publish_period_ms 发布周期，单位 ms。
    */
-  WebotsReferee(LibXR::HardwareContainer &, LibXR::ApplicationManager &app,
-                float bullet_speed, float shooter_heat_limit = 240.0f,
+  WebotsReferee(float bullet_speed, float shooter_heat_limit = 240.0f,
                 float shooter_cooling_value = 40.0f, uint8_t robot_id = 7,
                 uint8_t robot_level = 1, uint16_t max_hp = 200,
-                uint16_t chassis_power_limit = 45,
-                int publish_period_ms = 100)
+                uint16_t chassis_power_limit = 45, int publish_period_ms = 100)
       : referee_domain_("host"),
         robot_game_referee_topic_(
             LibXR::Topic::CreateTopic<WebotsRefereeTypes::RobotGameRefereeSummary>(
@@ -87,19 +74,17 @@ class WebotsReferee : public LibXR::Application
     summary_.robot_status.robot_level = robot_level;
     summary_.robot_status.remain_hp = max_hp;
     summary_.robot_status.max_hp = max_hp;
-    summary_.robot_status.shooter_cooling_value =
-        ClampToUint16(shooter_cooling_value);
-    summary_.robot_status.shooter_heat_limit =
-        ClampToUint16(shooter_heat_limit);
+    summary_.robot_status.shooter_cooling_value = ClampToUint16(shooter_cooling_value);
+    summary_.robot_status.shooter_heat_limit = ClampToUint16(shooter_heat_limit);
     summary_.robot_status.chassis_power_limit = chassis_power_limit;
     summary_.robot_status.power_gimbal_output = 1;
     summary_.robot_status.power_chassis_output = 1;
     summary_.robot_status.power_launcher_output = 1;
 
     auto launcher_state_cb = LibXR::Topic::Callback::Create(
-        [](bool, WebotsReferee *self, const LibXR::ConstRawData &data)
+        [](bool, WebotsReferee* self, const LibXR::ConstRawData& data)
         {
-          auto *state = reinterpret_cast<const WebotsRefereeTypes::WebotsLauncherState *>(
+          auto* state = reinterpret_cast<const WebotsRefereeTypes::WebotsLauncherState*>(
               data.addr_);
           if (state != nullptr &&
               data.size_ == sizeof(WebotsRefereeTypes::WebotsLauncherState))
@@ -113,10 +98,10 @@ class WebotsReferee : public LibXR::Application
     launcher_state_topic_.RegisterCallback(launcher_state_cb);
 
     auto launcher_shot_event_cb = LibXR::Topic::Callback::Create(
-        [](bool, WebotsReferee *self, const LibXR::ConstRawData &data)
+        [](bool, WebotsReferee* self, const LibXR::ConstRawData& data)
         {
-          auto *event =
-              reinterpret_cast<const WebotsRefereeTypes::WebotsLauncherShotEvent *>(
+          auto* event =
+              reinterpret_cast<const WebotsRefereeTypes::WebotsLauncherShotEvent*>(
                   data.addr_);
           if (event != nullptr &&
               data.size_ == sizeof(WebotsRefereeTypes::WebotsLauncherShotEvent))
@@ -144,19 +129,16 @@ class WebotsReferee : public LibXR::Application
         this);
     launcher_shot_event_topic_.RegisterCallback(launcher_shot_event_cb);
 
-    auto timer_handle = LibXR::Timer::CreateTask<WebotsReferee *>(
-        [](WebotsReferee *self)
-        { self->PublishSummary(); }, this,
+    auto timer_handle = LibXR::Timer::CreateTask<WebotsReferee*>(
+        [](WebotsReferee* self) { self->PublishSummary(); }, this,
         static_cast<uint32_t>(std::max(1, publish_period_ms)));
 
     LibXR::Timer::Add(timer_handle);
 
     LibXR::Timer::Start(timer_handle);
-
-    app.Register(*this);
   }
 
-  void OnMonitor() override {}
+  void OnMonitor() {}
 
  private:
   /**
@@ -172,10 +154,8 @@ class WebotsReferee : public LibXR::Application
           static_cast<uint64_t>(LibXR::Timebase::GetMicroseconds());
       if (have_launcher_state_)
       {
-        summary_.robot_status.shooter_cooling_value =
-            ClampToUint16(state_.cooling_rate);
-        summary_.robot_status.shooter_heat_limit =
-            ClampToUint16(state_.heat_limit);
+        summary_.robot_status.shooter_cooling_value = ClampToUint16(state_.cooling_rate);
+        summary_.robot_status.shooter_heat_limit = ClampToUint16(state_.heat_limit);
         summary_.robot_status.power_launcher_output = state_.launcher_enabled ? 1 : 0;
       }
 

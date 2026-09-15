@@ -1,5 +1,16 @@
 # WebotsReferee
 
+## Static assembly source line
+
+This source line uses explicit C++ constructor dependencies and ordered instance
+arguments. Inspect the current primary header with `xrobot_mod_parser --path .`;
+its declarations, not old manifest/config examples, define the interface.
+Historical HardwareContainer/ApplicationManager examples below apply only to the
+older dynamic source tags. Device/protocol descriptions remain relevant.
+See the XRobot [migration guide](https://github.com/xrobot-org/XRobot/blob/dev/MIGRATION.md).
+Compilation is not hardware validation; retain version-specific board evidence.
+
+
 `WebotsReferee` 是 Webots 中的裁判摘要模拟模块。它发布 MCU 侧当前使用的
 `robot_game_ref` 摘要包，并从 `WebotsFireNotify` 的发射机构状态同步弹速、射频和热量配置。
 

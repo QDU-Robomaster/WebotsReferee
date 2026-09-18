@@ -6,7 +6,7 @@
  */
 
 #include <cstdint>
-#include "RefereeTypes.hpp"
+#include "Referee.hpp"
 
 namespace WebotsRefereeTypes
 {
@@ -23,9 +23,9 @@ enum class WebotsLauncherRejectReason : uint8_t
 };
 
 /** @brief 与 Aimer/实机 Referee 使用完全相同的类型，不在仿真端复制协议布局。 */
-using RobotGameRefereeStatus = RefereeTypes::RobotStatus;
-using RobotGameRefereeGame = RefereeTypes::GameStatus;
-using RobotGameRefereeSummary = RefereeTypes::RobotGameRefereePack;
+using RobotGameRefereeStatus = Referee::RobotStatus;
+using RobotGameRefereeGame = Referee::GameStatus;
+using RobotGameRefereeSummary = Referee::RobotGameRefereePack;
 
 /**
  * @brief Webots 发射机构当前状态快照。

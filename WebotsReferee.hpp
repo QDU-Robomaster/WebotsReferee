@@ -32,22 +32,25 @@ depends:
 class WebotsReferee
 {
  public:
+  struct Param
+  {
+    float bullet_speed;  ///< 默认弹速，单位 m/s。
+    float shooter_heat_limit;  ///< 热量上限。
+    float shooter_cooling_value;  ///< 每秒冷却值。
+    uint8_t robot_id;  ///< 机器人 ID。
+    uint8_t robot_level;  ///< 机器人等级。
+    uint16_t max_hp;  ///< 最大血量和初始当前血量。
+    uint16_t chassis_power_limit;  ///< 底盘功率上限。
+    int publish_period_ms;  ///< 发布周期，单位 ms。
+  };
+
   /**
    * @brief 构造 Webots 裁判摘要模拟器。
    *
-   * @param bullet_speed 默认弹速，单位 m/s。
-   * @param shooter_heat_limit 热量上限。
-   * @param shooter_cooling_value 每秒冷却值。
-   * @param robot_id 机器人 ID。
-   * @param robot_level 机器人等级。
-   * @param max_hp 最大血量和初始当前血量。
-   * @param chassis_power_limit 底盘功率上限。
-   * @param publish_period_ms 发布周期，单位 ms。
+   * @param param Value configuration.
    */
-  WebotsReferee(float bullet_speed, float shooter_heat_limit = 240.0f,
-                float shooter_cooling_value = 40.0f, uint8_t robot_id = 7,
-                uint8_t robot_level = 1, uint16_t max_hp = 200,
-                uint16_t chassis_power_limit = 45, int publish_period_ms = 100)
+  WebotsReferee(
+      const Param& param = {.bullet_speed = 30.0f, .shooter_heat_limit = 240.0f, .shooter_cooling_value = 40.0f, .robot_id = 7, .robot_level = 1, .max_hp = 200, .chassis_power_limit = 45, .publish_period_ms = 100})
       : referee_domain_("host"),
         robot_game_referee_topic_(
             LibXR::Topic::CreateTopic<WebotsRefereeTypes::RobotGameRefereeSummary>(
@@ -60,9 +63,9 @@ class WebotsReferee
             LibXR::Topic::CreateTopic<WebotsRefereeTypes::WebotsLauncherShotEvent>(
                 "shot_event", &launcher_domain_, true))
   {
-    state_.bullet_speed = bullet_speed;
-    state_.heat_limit = shooter_heat_limit;
-    state_.cooling_rate = shooter_cooling_value;
+    state_.bullet_speed = param.bullet_speed;
+    state_.heat_limit = param.shooter_heat_limit;
+    state_.cooling_rate = param.shooter_cooling_value;
     state_.single_shot_heat = 10.0f;
     state_.max_fire_frequency_hz = 20.0f;
     state_.fire_delay_s = 0.03f;
@@ -70,13 +73,13 @@ class WebotsReferee
     state_.launcher_enabled = 1;
 
     summary_ = {};
-    summary_.robot_status.robot_id = robot_id;
-    summary_.robot_status.robot_level = robot_level;
-    summary_.robot_status.remain_hp = max_hp;
-    summary_.robot_status.max_hp = max_hp;
-    summary_.robot_status.shooter_cooling_value = ClampToUint16(shooter_cooling_value);
-    summary_.robot_status.shooter_heat_limit = ClampToUint16(shooter_heat_limit);
-    summary_.robot_status.chassis_power_limit = chassis_power_limit;
+    summary_.robot_status.robot_id = param.robot_id;
+    summary_.robot_status.robot_level = param.robot_level;
+    summary_.robot_status.remain_hp = param.max_hp;
+    summary_.robot_status.max_hp = param.max_hp;
+    summary_.robot_status.shooter_cooling_value = ClampToUint16(param.shooter_cooling_value);
+    summary_.robot_status.shooter_heat_limit = ClampToUint16(param.shooter_heat_limit);
+    summary_.robot_status.chassis_power_limit = param.chassis_power_limit;
     summary_.robot_status.power_gimbal_output = 1;
     summary_.robot_status.power_chassis_output = 1;
     summary_.robot_status.power_launcher_output = 1;
@@ -131,7 +134,7 @@ class WebotsReferee
 
     auto timer_handle = LibXR::Timer::CreateTask<WebotsReferee*>(
         [](WebotsReferee* self) { self->PublishSummary(); }, this,
-        static_cast<uint32_t>(std::max(1, publish_period_ms)));
+        static_cast<uint32_t>(std::max(1, param.publish_period_ms)));
 
     LibXR::Timer::Add(timer_handle);
 

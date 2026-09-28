@@ -141,8 +141,6 @@ class WebotsReferee
     LibXR::Timer::Start(timer_handle);
   }
 
-  void OnMonitor() {}
-
  private:
   /**
    * @brief 周期发布裁判摘要。

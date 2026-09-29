@@ -12,8 +12,8 @@
 
 输出：
 
-- `host/robot_game_ref`：`RobotGameRefereeSummary`，即 `Referee::RobotGameRefereePack`，由 LibXR
-  定时器任务每 `publish_period_ms` 发布一次。
+- `host/<referee_robot_game_tp_name>`（默认 `host/robot_game_ref`）：`RobotGameRefereeSummary`，
+  即 `Referee::RobotGameRefereePack`，由 LibXR 定时器任务每 `publish_period_ms` 发布一次。
 
 ## 数据内容
 
@@ -47,7 +47,8 @@ WebotsReferee(const Param& param = {.bullet_speed = 30.0f, .shooter_heat_limit =
                                     .shooter_cooling_value = 40.0f, .robot_id = 7,
                                     .robot_level = 1, .max_hp = 200,
                                     .chassis_power_limit = 45,
-                                    .publish_period_ms = 100});
+                                    .publish_period_ms = 100,
+                                    .referee_robot_game_tp_name = "robot_game_ref"});
 ```
 
 无依赖项。
@@ -62,6 +63,8 @@ WebotsReferee(const Param& param = {.bullet_speed = 30.0f, .shooter_heat_limit =
 - `max_hp`：最大血量和当前血量初值，默认 `200`。
 - `chassis_power_limit`：底盘功率上限，单位 W，默认 `45`。
 - `publish_period_ms`：裁判摘要发布周期，单位 ms，默认 `100`，最小按 1 执行。
+- `referee_robot_game_tp_name`：`host` 域内裁判摘要 Topic 名，默认 `"robot_game_ref"`（与硬件 Referee
+  的同名参数一致），须与订阅方（ArmorDetector、Aimer 的 `referee_topic`）一致。
 
 ## 使用
 
@@ -88,9 +91,10 @@ modules:
           max_hp: '200'
           chassis_power_limit: '45'
           publish_period_ms: '100'
+          referee_robot_game_tp_name: '"robot_game_ref"'
 ```
 
-本模块不使用 BSP 对象，不需要 `XR_REGISTER`。订阅 `host/robot_game_ref` 的模块应排在本实例之后。
+本模块不使用 BSP 对象，不需要 `XR_REGISTER`。订阅该裁判摘要的模块应排在本实例之后。
 
 填好后再次运行 `xrobot setup`，生成 `User/xrobot_main.hpp`。
 

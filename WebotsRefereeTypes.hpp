@@ -1,10 +1,5 @@
 #pragma once
 
-/**
- * @file WebotsRefereeTypes.hpp
- * @brief Webots 裁判与发射机构共享的数据结构。
- */
-
 #include <cstdint>
 #include "Referee.hpp"
 
@@ -22,7 +17,7 @@ enum class WebotsLauncherRejectReason : uint8_t
   HEAT_LIMIT = 4,  ///< 请求会使热量达到或超过上限。
 };
 
-/** @brief 与 Aimer/实机 Referee 使用完全相同的类型，不在仿真端复制协议布局。 */
+/** @brief 与 Aimer 和实机 Referee 使用相同的类型。 */
 using RobotGameRefereeStatus = Referee::RobotStatus;
 using RobotGameRefereeGame = Referee::GameStatus;
 using RobotGameRefereeSummary = Referee::RobotGameRefereePack;

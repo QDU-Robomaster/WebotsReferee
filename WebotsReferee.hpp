@@ -1,13 +1,8 @@
 #pragma once
 
-/**
- * @file WebotsReferee.hpp
- * @brief Webots 裁判摘要模拟模块。
- */
-
 // clang-format off
 /* === MODULE MANIFEST V2 ===
-module_description: Webots referee simulator that mirrors launcher state into robot_game_ref
+module_description: Webots 裁判摘要模拟模块：周期发布 robot_game_ref 摘要并同步发射机构状态 / Webots referee summary simulation Module that publishes the robot_game_ref summary periodically and mirrors the launcher state
 depends:
 - id: QDU-Robomaster/Referee
   ref: same-or-dev

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "Referee.hpp"
+#include "RefereeTypes.hpp"
 
 namespace WebotsRefereeTypes
 {
@@ -22,17 +22,17 @@ enum class WebotsLauncherRejectReason : uint8_t
  * @brief 机器人状态，与 Referee 相同的类型。
  *        Robot status, the same type as in Referee.
  */
-using RobotGameRefereeStatus = Referee::RobotStatus;
+using RobotGameRefereeStatus = RefereeTypes::RobotStatus;
 /**
  * @brief 比赛状态，与 Referee 相同的类型。
  *        Game status, the same type as in Referee.
  */
-using RobotGameRefereeGame = Referee::GameStatus;
+using RobotGameRefereeGame = RefereeTypes::GameStatus;
 /**
  * @brief 裁判摘要，与 Referee 相同的类型。
  *        Referee summary, the same type as in Referee.
  */
-using RobotGameRefereeSummary = Referee::RobotGameRefereePack;
+using RobotGameRefereeSummary = RefereeTypes::RobotGameRefereePack;
 
 /**
  * @brief Webots 发射机构当前状态快照。

@@ -26,9 +26,9 @@ Summary content:
 
 ## 2. 共享类型 / Shared Types
 
-`WebotsRefereeTypes.hpp` 将 `RobotGameRefereeSummary` 别名到 `Referee::RobotGameRefereePack`（`RobotGameRefereeStatus`、`RobotGameRefereeGame` 同理），复用裁判协议结构体，因此模块依赖 `QDU-Robomaster/Referee`，摘要为 92 字节。`WebotsLauncherRejectReason`、`WebotsLauncherState` 和 `WebotsLauncherShotEvent` 定义在该头文件中，供 `WebotsFireNotify` 复用。
+`WebotsRefereeTypes.hpp` 将 `RobotGameRefereeSummary` 别名到 `RefereeTypes::RobotGameRefereePack`（`RobotGameRefereeStatus`、`RobotGameRefereeGame` 同理），复用裁判协议结构体，因此模块依赖 `QDU-Robomaster/Referee`，摘要为 92 字节。`WebotsLauncherRejectReason`、`WebotsLauncherState` 和 `WebotsLauncherShotEvent` 定义在该头文件中，供 `WebotsFireNotify` 复用。
 
-`WebotsRefereeTypes.hpp` aliases `RobotGameRefereeSummary` to `Referee::RobotGameRefereePack` (likewise `RobotGameRefereeStatus` and `RobotGameRefereeGame`), reusing the referee protocol structures, so the Module depends on `QDU-Robomaster/Referee`; the summary is 92 bytes. `WebotsLauncherRejectReason`, `WebotsLauncherState` and `WebotsLauncherShotEvent` are defined in that header and reused by `WebotsFireNotify`.
+`WebotsRefereeTypes.hpp` aliases `RobotGameRefereeSummary` to `RefereeTypes::RobotGameRefereePack` (likewise `RobotGameRefereeStatus` and `RobotGameRefereeGame`), reusing the referee protocol structures, so the Module depends on `QDU-Robomaster/Referee`; the summary is 92 bytes. `WebotsLauncherRejectReason`, `WebotsLauncherState` and `WebotsLauncherShotEvent` are defined in that header and reused by `WebotsFireNotify`.
 
 ## 3. 构造接口 / Constructor
 
@@ -76,13 +76,13 @@ Configuration parameters (`Param`):
 
 | Topic | 方向 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `host/<referee_robot_game_tp_name>`（默认 `host/robot_game_ref`） | 发布 | `RobotGameRefereeSummary`（`Referee::RobotGameRefereePack`） | 裁判摘要，每 `publish_period_ms` 发布一次 |
+| `host/<referee_robot_game_tp_name>`（默认 `host/robot_game_ref`） | 发布 | `RobotGameRefereeSummary`（`RefereeTypes::RobotGameRefereePack`） | 裁判摘要，每 `publish_period_ms` 发布一次 |
 | `webots_launcher/state` | 订阅 | `WebotsLauncherState` | 发射机构周期状态；本模块创建该 Topic |
 | `webots_launcher/shot_event` | 订阅 | `WebotsLauncherShotEvent` | 仿真发射机构已接受并完成延迟后的出弹事件；本模块创建该 Topic |
 
 | Topic | Direction | Type | Meaning |
 | --- | --- | --- | --- |
-| `host/<referee_robot_game_tp_name>` (default `host/robot_game_ref`) | Publish | `RobotGameRefereeSummary` (`Referee::RobotGameRefereePack`) | Referee summary, published every `publish_period_ms` |
+| `host/<referee_robot_game_tp_name>` (default `host/robot_game_ref`) | Publish | `RobotGameRefereeSummary` (`RefereeTypes::RobotGameRefereePack`) | Referee summary, published every `publish_period_ms` |
 | `webots_launcher/state` | Subscribe | `WebotsLauncherState` | Periodic launcher state; this Module creates the Topic |
 | `webots_launcher/shot_event` | Subscribe | `WebotsLauncherShotEvent` | Shot event of the simulated launcher after an accepted request has completed its delay; this Module creates the Topic |
 

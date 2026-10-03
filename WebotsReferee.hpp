@@ -67,8 +67,15 @@ class WebotsReferee
    * @param param 构造参数。
    *              Construction parameters.
    */
-  WebotsReferee(
-      const Param& param = {.bullet_speed = 30.0f, .shooter_heat_limit = 240.0f, .shooter_cooling_value = 40.0f, .robot_id = 7, .robot_level = 1, .max_hp = 200, .chassis_power_limit = 45, .publish_period_ms = 100, .referee_robot_game_tp_name = "robot_game_ref"})
+  WebotsReferee(const Param& param = {.bullet_speed = 30.0f,
+                                      .shooter_heat_limit = 240.0f,
+                                      .shooter_cooling_value = 40.0f,
+                                      .robot_id = 7,
+                                      .robot_level = 1,
+                                      .max_hp = 200,
+                                      .chassis_power_limit = 45,
+                                      .publish_period_ms = 100,
+                                      .referee_robot_game_tp_name = "robot_game_ref"})
       : referee_domain_("host"),
         robot_game_referee_topic_(
             LibXR::Topic::CreateTopic<WebotsRefereeTypes::RobotGameRefereeSummary>(

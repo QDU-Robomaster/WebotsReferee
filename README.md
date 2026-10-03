@@ -88,9 +88,9 @@ Configuration parameters (`Param`):
 
 ## 5. 配置示例 / Configuration Example
 
-`xrobot instance add QDU-Robomaster/WebotsReferee` 写入的实例，无依赖项，`param` 按需修改。以下取自 `bsp-webots-autoaim` 的配置：
+`xrobot instance add QDU-Robomaster/WebotsReferee` 写入的实例，无依赖项，`param` 按需修改。以下数值取自 `bsp-webots-autoaim` 的配置：
 
-An instance written by `xrobot instance add QDU-Robomaster/WebotsReferee`, which has no dependencies; `param` is adjusted as needed. The following is taken from the `bsp-webots-autoaim` configuration:
+An instance written by `xrobot instance add QDU-Robomaster/WebotsReferee`, which has no dependencies; `param` is adjusted as needed. The values below are taken from the `bsp-webots-autoaim` configuration:
 
 ```yaml
 modules:
@@ -98,7 +98,7 @@ modules:
     id: WebotsReferee_0
     args:
       - param:
-          bullet_speed: 23.0
+          bullet_speed: 23.0f
           shooter_heat_limit: 240.0f
           shooter_cooling_value: 40.0f
           robot_id: 7

@@ -19,31 +19,53 @@ depends:
 
 /**
  * @brief Webots 裁判摘要模拟器。
+ *        Webots referee summary simulator.
  *
- * 模块发布与 MCU `robot_game_ref` 摘要包布局一致的数据。发射机构状态由
- * `WebotsFireNotify` 通过 `webots_launcher/state` 和
- * `webots_launcher/shot_event` 同步。
+ * @details 发布与 MCU `robot_game_ref` 摘要包布局一致的数据。发射机构状态由
+ *          `WebotsFireNotify` 通过 `webots_launcher/state` 和
+ *          `webots_launcher/shot_event` 同步。
+ *          Publishes data with the same layout as the MCU `robot_game_ref` summary
+ *          packet. The launcher state is synchronized from `WebotsFireNotify` through
+ *          `webots_launcher/state` and `webots_launcher/shot_event`.
  */
 class WebotsReferee
 {
  public:
+  /**
+   * @brief 构造参数。
+   *        Construction parameters.
+   */
   struct Param
   {
-    float bullet_speed;  ///< 默认弹速，单位 m/s。
-    float shooter_heat_limit;  ///< 热量上限。
-    float shooter_cooling_value;  ///< 每秒冷却值。
-    uint8_t robot_id;  ///< 机器人 ID。
-    uint8_t robot_level;  ///< 机器人等级。
-    uint16_t max_hp;  ///< 最大血量和初始当前血量。
-    uint16_t chassis_power_limit;  ///< 底盘功率上限。
-    int publish_period_ms;  ///< 发布周期，单位 ms。
-    const char* referee_robot_game_tp_name;  ///< host 域内裁判摘要 Topic 名称。
+    float bullet_speed;  ///< 初始弹速，单位 m/s
+    ///< Initial bullet speed in m/s
+    float shooter_heat_limit;  ///< 初始热量上限
+    ///< Initial heat limit
+    float shooter_cooling_value;  ///< 初始每秒冷却值
+    ///< Initial cooling value per second
+    uint8_t robot_id;  ///< 机器人 ID
+    ///< Robot ID
+    uint8_t robot_level;  ///< 机器人等级
+    ///< Robot level
+    uint16_t max_hp;  ///< 最大血量和当前血量初值
+    ///< Maximum HP and initial current HP
+    uint16_t chassis_power_limit;  ///< 底盘功率上限，单位 W
+    ///< Chassis power limit in W
+    int publish_period_ms;  ///< 发布周期，单位 ms，最小按 1 执行
+    ///< Publish period in ms, at least 1 is used
+    const char* referee_robot_game_tp_name;  ///< host 域内裁判摘要 Topic 名称
+    ///< Name of the referee summary Topic in the host domain
   };
 
   /**
-   * @brief 构造 Webots 裁判摘要模拟器。
+   * @brief 构造 Webots 裁判摘要模拟器：创建摘要与发射机构 Topic，
+   *        注册回调并启动周期发布任务。
+   *        Construct the Webots referee summary simulator: create the summary and
+   *        launcher Topics, register the callbacks and start the periodic publishing
+   *        task.
    *
-   * @param param Value configuration.
+   * @param param 构造参数。
+   *              Construction parameters.
    */
   WebotsReferee(
       const Param& param = {.bullet_speed = 30.0f, .shooter_heat_limit = 240.0f, .shooter_cooling_value = 40.0f, .robot_id = 7, .robot_level = 1, .max_hp = 200, .chassis_power_limit = 45, .publish_period_ms = 100, .referee_robot_game_tp_name = "robot_game_ref"})
@@ -140,6 +162,7 @@ class WebotsReferee
  private:
   /**
    * @brief 周期发布裁判摘要。
+   *        Publish the referee summary periodically.
    */
   void PublishSummary()
   {
@@ -163,7 +186,13 @@ class WebotsReferee
   }
 
   /**
-   * @brief 将浮点配置钳位到裁判包使用的 uint16_t。
+   * @brief 把浮点值钳位到裁判包使用的 `uint16_t`。
+   *        Clamp a floating-point value to the `uint16_t` used by the referee packet.
+   *
+   * @param value 输入值，非有限值和非正值按 0 处理。
+   *              Input value; non-finite and non-positive values are treated as 0.
+   * @return 钳位后的值。
+   *         The clamped value.
    */
   static uint16_t ClampToUint16(float value)
   {

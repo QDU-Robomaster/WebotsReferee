@@ -120,6 +120,7 @@ class WebotsReferee
             LibXR::Mutex::LockGuard lock(self->state_mutex_);
             self->state_ = *state;
             self->have_launcher_state_ = true;
+            self->UpdateHeatLocked(state->current_heat, state->update_time_us);
           }
         },
         this);
@@ -152,6 +153,17 @@ class WebotsReferee
                   1000000.0f / static_cast<float>(event->shot_interval_us);
             }
             self->have_launcher_state_ = true;
+            self->UpdateHeatLocked(event->heat_after, event->fire_time_us);
+
+            auto& launcher = self->summary_.launcher_data;
+            launcher.bullet_type = BULLET_TYPE_17MM;
+            launcher.launcherer_id = LAUNCHER_ID_17MM;
+            launcher.bullet_freq = event->shot_interval_us > 0
+                                       ? ClampToUint8(1000000.0f / static_cast<float>(
+                                                                       event->shot_interval_us))
+                                       : 0;
+            launcher.bullet_speed = event->bullet_speed;
+            ++self->summary_.shot_seq;
           }
         },
         this);
@@ -177,13 +189,22 @@ class WebotsReferee
 
     {
       LibXR::Mutex::LockGuard lock(state_mutex_);
-      summary_.game_status.sync_time_stamp =
-          static_cast<uint64_t>(LibXR::Timebase::GetMicroseconds());
+      const auto now_us = static_cast<uint64_t>(LibXR::Timebase::GetMicroseconds());
+      summary_.game_status.sync_time_stamp = now_us;
       if (have_launcher_state_)
       {
         summary_.robot_status.shooter_cooling_value = ClampToUint16(state_.cooling_rate);
         summary_.robot_status.shooter_heat_limit = ClampToUint16(state_.heat_limit);
         summary_.robot_status.power_launcher_output = state_.launcher_enabled ? 1 : 0;
+      }
+      if (have_heat_)
+      {
+        const float elapsed_s =
+            now_us > heat_time_us_ ? static_cast<float>(now_us - heat_time_us_) * 1e-6f
+                                   : 0.0f;
+        const float heat = std::max(0.0f, heat_ - std::max(0.0f, state_.cooling_rate) *
+                                                      elapsed_s);
+        summary_.launcher_17_heat = ClampToUint16(std::round(heat));
       }
 
       summary = summary_;
@@ -210,6 +231,61 @@ class WebotsReferee
 
     return static_cast<uint16_t>(std::min(value, 65535.0f));
   }
+
+  /**
+   * @brief 把浮点值四舍五入并钳位到 `uint8_t`。
+   *        Round a floating-point value and clamp it to `uint8_t`.
+   *
+   * @param value 输入值，非有限值和非正值按 0 处理。
+   *              Input value; non-finite and non-positive values are treated as 0.
+   * @return 钳位后的值。
+   *         The clamped value.
+   */
+  static uint8_t ClampToUint8(float value)
+  {
+    if (!std::isfinite(value) || value <= 0.0f)
+    {
+      return 0;
+    }
+
+    return static_cast<uint8_t>(std::min(std::round(value), 255.0f));
+  }
+
+  /**
+   * @brief 记录一个热量样本，只保留时间最新的样本；调用方持有 `state_mutex_`。
+   *        Record a heat sample and keep only the newest one; the caller holds
+   *        `state_mutex_`.
+   *
+   * @param heat 热量。
+   *             Heat.
+   * @param time_us 样本时间，单位 us。
+   *                Sample time in us.
+   */
+  void UpdateHeatLocked(float heat, uint64_t time_us)
+  {
+    if (!std::isfinite(heat) || (have_heat_ && time_us < heat_time_us_))
+    {
+      return;
+    }
+    heat_ = std::max(0.0f, heat);
+    heat_time_us_ = time_us;
+    have_heat_ = true;
+  }
+
+  /** @brief 0x0207 中 17 mm 弹丸的弹丸类型值。 */
+  static constexpr uint8_t BULLET_TYPE_17MM = 1;
+
+  /** @brief 0x0207 中 17 mm 发射机构的发射机构 ID。 */
+  static constexpr uint8_t LAUNCHER_ID_17MM = 1;
+
+  /** @brief 最近一次热量样本。 */
+  float heat_{0.0f};
+
+  /** @brief 最近一次热量样本的时间，单位 us。 */
+  uint64_t heat_time_us_{0};
+
+  /** @brief 是否已有热量样本。 */
+  bool have_heat_{false};
 
   /** @brief 最近一次发布的裁判摘要。 */
   WebotsRefereeTypes::RobotGameRefereeSummary summary_{};

@@ -7,7 +7,6 @@ jobs:
   build:
     uses: xrobot-org/XRobot/.github/workflows/module-ci.yml@v1
     with:
-      dependency-ref: refs/heads/feat/host-referee-pack
       template-args: '[]'
       image: 'ghcr.io/xrobot-org/docker-image-webots:main'
       cmake-options: '-DLIBXR_SYSTEM=webots -DLIBXR_DRIVER=webots -DWEBOTS_HOME=/usr/local/webots'

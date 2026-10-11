@@ -10,7 +10,8 @@ WebotsReferee 是 Webots 中的裁判摘要模拟模块。它周期发布与 MCU
 
 - `robot_status` 填充机器人 ID、等级、血量上限和当前血量（等于 `max_hp`）、冷却值、热量上限、底盘功率上限，以及云台、底盘、发射机构输出使能（均为 1）。
 - 收到过发射机构状态后，每次发布前用最新状态覆盖 `shooter_cooling_value`、`shooter_heat_limit` 和 `power_launcher_output`。
-- 弹速、射频与当前热量保存在模块内部的发射机构状态中。
+- `launcher_17_heat` 为发布时刻的 17 mm 射击热量：取 `webots_launcher/state` 与 `webots_launcher/shot_event` 中时间最新的热量，按冷却值推进到发布时刻并取整。
+- 每个出弹事件更新 `launcher_data`（弹丸类型 1、发射机构 ID 1、按与上一发间隔算出的射频、弹丸初速度），并把 `shot_seq` 加 1。
 - `game_status.sync_time_stamp` 使用当前 LibXR 时间戳（µs）。
 - 其余裁判字段保持零初始化。
 
@@ -20,15 +21,16 @@ Summary content:
 
 - `robot_status` is filled with the robot ID, the level, the maximum HP and the current HP (equal to `max_hp`), the cooling value, the heat limit, the chassis power limit and the gimbal, chassis and launcher output enables (all 1).
 - After a launcher state has been received, `shooter_cooling_value`, `shooter_heat_limit` and `power_launcher_output` are overwritten with the latest state before every publish.
-- Bullet speed, fire rate and current heat are kept in the internal launcher state of the Module.
+- `launcher_17_heat` is the 17 mm shooting heat at the publish time: the newest heat of `webots_launcher/state` and `webots_launcher/shot_event`, advanced to the publish time with the cooling value and rounded.
+- Every shot event updates `launcher_data` (projectile type 1, launcher ID 1, the fire rate from the interval to the previous shot, the initial speed) and increments `shot_seq`.
 - `game_status.sync_time_stamp` uses the current LibXR timestamp (µs).
 - The remaining referee fields stay zero-initialized.
 
 ## 2. 共享类型 / Shared Types
 
-`WebotsRefereeTypes.hpp` 将 `RobotGameRefereeSummary` 别名到 `RefereeTypes::RobotGameRefereePack`（`RobotGameRefereeStatus`、`RobotGameRefereeGame` 同理），复用裁判协议结构体，因此模块依赖 `QDU-Robomaster/Referee`，摘要为 92 字节。`WebotsLauncherRejectReason`、`WebotsLauncherState` 和 `WebotsLauncherShotEvent` 定义在该头文件中，供 `WebotsFireNotify` 复用。
+`WebotsRefereeTypes.hpp` 将 `RobotGameRefereeSummary` 别名到 `RefereeTypes::RobotGameRefereePack`（`RobotGameRefereeStatus`、`RobotGameRefereeGame` 同理），复用裁判协议结构体，因此模块依赖 `QDU-Robomaster/Referee`，摘要为 117 字节。`WebotsLauncherRejectReason`、`WebotsLauncherState` 和 `WebotsLauncherShotEvent` 定义在该头文件中，供 `WebotsFireNotify` 复用。
 
-`WebotsRefereeTypes.hpp` aliases `RobotGameRefereeSummary` to `RefereeTypes::RobotGameRefereePack` (likewise `RobotGameRefereeStatus` and `RobotGameRefereeGame`), reusing the referee protocol structures, so the Module depends on `QDU-Robomaster/Referee`; the summary is 92 bytes. `WebotsLauncherRejectReason`, `WebotsLauncherState` and `WebotsLauncherShotEvent` are defined in that header and reused by `WebotsFireNotify`.
+`WebotsRefereeTypes.hpp` aliases `RobotGameRefereeSummary` to `RefereeTypes::RobotGameRefereePack` (likewise `RobotGameRefereeStatus` and `RobotGameRefereeGame`), reusing the referee protocol structures, so the Module depends on `QDU-Robomaster/Referee`; the summary is 117 bytes. `WebotsLauncherRejectReason`, `WebotsLauncherState` and `WebotsLauncherShotEvent` are defined in that header and reused by `WebotsFireNotify`.
 
 ## 3. 构造接口 / Constructor
 
@@ -48,7 +50,7 @@ WebotsReferee(const Param& param = {.bullet_speed = 30.0f,
 
 配置参数（`Param`）：
 
-- `bullet_speed`：内部发射机构状态的初始弹速，单位 m/s，默认 `30.0`；摘要中没有该字段。
+- `bullet_speed`：内部发射机构状态的初始弹速，单位 m/s，默认 `30.0`；摘要中的 `launcher_data.bullet_speed` 取出弹事件的弹速。
 - `shooter_heat_limit`：初始热量上限，默认 `240.0`。
 - `shooter_cooling_value`：初始每秒冷却值，默认 `40.0`。
 - `robot_id`：本机机器人 ID，默认 `7`（红方哨兵）。
@@ -62,7 +64,7 @@ Dependencies: none.
 
 Configuration parameters (`Param`):
 
-- `bullet_speed`: initial bullet speed of the internal launcher state in m/s, default `30.0`; the summary has no such field.
+- `bullet_speed`: initial bullet speed of the internal launcher state in m/s, default `30.0`; `launcher_data.bullet_speed` of the summary takes the speed of the shot events.
 - `shooter_heat_limit`: initial heat limit, default `240.0`.
 - `shooter_cooling_value`: initial cooling value per second, default `40.0`.
 - `robot_id`: ID of this robot, default `7` (red sentry).
